@@ -6,12 +6,13 @@
 <title>اطلب مواد البناء الفاخرة من الصين</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Kufi+Arabic:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#17292E; --porcelain:#F5F6F4; --line:#D8DDD9; --brass:#A07D3B; --brass-deep:#7A5C22; --brass-tint:#F3ECDD; --white:#fff; --red:#B42318;
   --display:"Noto Kufi Arabic",system-ui,sans-serif; --body:"IBM Plex Sans Arabic",system-ui,sans-serif;
 }
+html[lang="en"]{--display:"IBM Plex Sans",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif}
 *{box-sizing:border-box}
 html{background:var(--porcelain);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased}
 body{margin:0;min-height:100vh}
@@ -19,12 +20,19 @@ button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-main{max-width:672px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:32px 16px 0}
-@media(min-width:640px){main{padding-top:56px}}
+main{max-width:672px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:20px 16px 0}
+@media(min-width:640px){main{padding-top:32px}}
+header{margin-bottom:32px}
 header h1{font:700 24px/1.5 var(--display);margin:0}
+html[lang="en"] header h1{line-height:1.3;letter-spacing:-.01em}
 @media(min-width:640px){header h1{font-size:30px}}
 header p{margin:8px 0 0;color:rgba(23,41,46,.7);font-size:16px}
-header{margin-bottom:32px}
+
+/* مبدّل اللغة */
+.lang{display:flex;justify-content:flex-end;margin-bottom:20px}
+.lang div{display:inline-flex;border:1px solid var(--line);border-radius:99px;background:var(--white);padding:3px}
+.lang button{min-height:36px;min-width:84px;border:0;border-radius:99px;background:none;padding:0 14px;font-size:14px;font-weight:500;cursor:pointer;color:rgba(23,41,46,.7)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:#fff}
 
 form{flex:1;display:flex;flex-direction:column}
 .progress{margin-bottom:24px}
@@ -62,7 +70,7 @@ textarea.inp{resize:vertical}
 /* المنتجات */
 .sel{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .sel:empty{display:none}
-.sel li{display:flex;align-items:center;gap:4px;background:var(--ink);color:#fff;border-radius:99px;padding:4px 12px 4px 4px;padding-inline:12px 4px;font-size:14px}
+.sel li{display:flex;align-items:center;gap:4px;background:var(--ink);color:#fff;border-radius:99px;padding:4px;padding-inline:12px 4px;font-size:14px}
 .sel button{width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer}
 .sel button:hover{background:rgba(255,255,255,.15)}
 #q{margin-bottom:12px}
@@ -80,6 +88,7 @@ textarea.inp{resize:vertical}
 .prow.on .box{background:var(--brass);border-color:var(--brass);color:#fff}
 .badge{background:var(--brass);color:#fff;border-radius:99px;padding:2px 8px;font-size:14px;font-weight:500}
 .fwd{color:rgba(23,41,46,.4)}
+html[dir="ltr"] .fwd, html[dir="ltr"] .prow.head svg{transform:scaleX(-1)}
 .empty{margin:0;padding:24px 16px;text-align:center;color:rgba(23,41,46,.6)}
 
 /* الأزرار */
@@ -105,44 +114,97 @@ dt{color:rgba(23,41,46,.6)} dd{margin:0}
 </head>
 <body>
 <main>
-  <header>
-    <h1>اطلب مواد البناء الفاخرة مباشرة من مصانع الصين</h1>
-    <p>أجب عن خمسة أسئلة قصيرة، وسنرسل لك عروض الأسعار على واتساب.</p>
-  </header>
+  <header id="head"></header>
   <div id="root"></div>
 </main>
 
 <script>
-/* ========= إعداد Supabase =========
-   ضع رابط المشروع والمفتاح (anon key) هنا.
-   إذا تركتهما فارغين يعمل النموذج بوضع تجريبي ولا يحفظ شيئًا. */
+/* ========= إعداد Supabase / Supabase setup =========
+   ضع رابط المشروع والمفتاح (anon key) هنا. إذا تركتهما فارغين يعمل النموذج بوضع تجريبي.
+   Put your project URL and anon key here. Leave empty for demo mode (nothing is saved). */
 const SUPABASE_URL = '';
 const SUPABASE_ANON_KEY = '';
 
-/* ========= البيانات (من ملف JSON الخاص بك) ========= */
-const C = {"markets":[{"id":"sa","name":"السعودية","dial":"966"},{"id":"ae","name":"الإمارات","dial":"971"},{"id":"qa","name":"قطر","dial":"974"},{"id":"kw","name":"الكويت","dial":"965"},{"id":"bh","name":"البحرين","dial":"973"},{"id":"om","name":"عُمان","dial":"968"}],"buyers":[{"id":"b01","name":"مستوردو مواد البناء"},{"id":"b02","name":"موزعو مواد البناء"},{"id":"b03","name":"تجار الجملة"},{"id":"b04","name":"شركات المقاولات"},{"id":"b05","name":"شركات التشطيبات والتجهيز الداخلي"},{"id":"b06","name":"شركات الواجهات"},{"id":"b07","name":"شركات الألمنيوم والزجاج"},{"id":"b08","name":"شركات المطابخ والحمامات"},{"id":"b09","name":"شركات اللاندسكيب"},{"id":"b10","name":"المطورون العقاريون"},{"id":"b11","name":"شركات الفنادق والضيافة"},{"id":"b12","name":"المكاتب الهندسية وشركات التصميم"}],"units":[{"id":"sqm","name":"متر مربع"},{"id":"lm","name":"متر طولي"},{"id":"pcs","name":"قطعة"},{"id":"set","name":"مجموعة"},{"id":"container","name":"حاوية"}],"frequency":[{"id":"once","name":"مرة واحدة"},{"id":"monthly","name":"شهريًا"},{"id":"quarterly","name":"كل 3 أشهر"},{"id":"yearly","name":"سنويًا"}],"timing":[{"id":"asap","name":"خلال شهر"},{"id":"q1","name":"خلال 3 أشهر"},{"id":"later","name":"بعد 3 أشهر"},{"id":"prices","name":"أريد الأسعار فقط"}],"categories":[{"id":"01","name":"الحجر والبلاط والأسطح الفاخرة","products":[{"id":"01-01","name":"ألواح بورسلان كبيرة الحجم","unit":"pcs","custom":true},{"id":"01-02","name":"ألواح الحجر المتكلس","unit":"set","custom":true},{"id":"01-03","name":"الرخام الطبيعي","unit":"lm","custom":true},{"id":"01-04","name":"الكوارتزيت الطبيعي","unit":"container","custom":true},{"id":"01-05","name":"الجرانيت الفاخر","unit":"sqm","custom":true},{"id":"01-06","name":"الفسيفساء الفاخرة","unit":"pcs","custom":true},{"id":"01-07","name":"البلاطات الخارجية السميكة","unit":"set","custom":true},{"id":"01-08","name":"الحجر الطبيعي المقصوص حسب الطلب","unit":"lm","custom":true}]},{"id":"02","name":"الألمنيوم والواجهات المعمارية","products":[{"id":"02-01","name":"أنظمة الواجهات الزجاجية والألمنيوم","unit":"pcs","custom":true},{"id":"02-02","name":"ألواح ألمنيوم مقطوعة بالليزر","unit":"set","custom":true},{"id":"02-03","name":"مشربيات ألمنيوم","unit":"lm","custom":true},{"id":"02-04","name":"قطاعات ألمنيوم معمارية مخصصة","unit":"container","custom":true},{"id":"02-05","name":"كسوة ألمنيوم للواجهات","unit":"sqm","custom":true},{"id":"02-06","name":"لوفرات ألمنيوم معمارية","unit":"pcs","custom":true},{"id":"02-07","name":"ألواح ألمنيوم مركبة فاخرة","unit":"set","custom":true}]},{"id":"03","name":"الأبواب والنوافذ والزجاج الفاخر","products":[{"id":"03-01","name":"أبواب منزلقة ضخمة بإطارات رفيعة","unit":"pcs","custom":true},{"id":"03-02","name":"أبواب محورية فاخرة","unit":"set","custom":true},{"id":"03-03","name":"نوافذ بإطارات مخفية أو رفيعة","unit":"lm","custom":true},{"id":"03-04","name":"زجاج منخفض الانبعاث الحراري","unit":"container","custom":true},{"id":"03-05","name":"زجاج ذكي قابل للتعتيم","unit":"sqm","custom":true},{"id":"03-06","name":"زجاج مصفح وديكوري","unit":"pcs","custom":true},{"id":"03-07","name":"أبواب زجاجية فاخرة","unit":"set","custom":true},{"id":"03-08","name":"واجهات زجاجية من الأرض إلى السقف","unit":"lm","custom":true}]},{"id":"04","name":"الكسوة الخارجية ومواد الواجهات","products":[{"id":"04-01","name":"كسوة WPC خارجية","unit":"pcs","custom":true},{"id":"04-02","name":"ألواح HPL للواجهات","unit":"set","custom":true},{"id":"04-03","name":"ألواح بورسلان للواجهات","unit":"lm","custom":true},{"id":"04-04","name":"ألواح GRC وGFRC معمارية","unit":"container","custom":true},{"id":"04-05","name":"ألواح معدنية للواجهات","unit":"sqm","custom":true},{"id":"04-06","name":"أنظمة الواجهات المهوّاة","unit":"pcs","custom":true},{"id":"04-07","name":"ألواح حجرية خفيفة للواجهات","unit":"set","custom":true},{"id":"04-08","name":"أنظمة Rainscreen","unit":"lm","custom":true}]},{"id":"05","name":"البرجولات والتظليل المعماري","products":[{"id":"05-01","name":"برجولات ألمنيوم فاخرة","unit":"pcs","custom":true},{"id":"05-02","name":"برجولات كهربائية ذكية","unit":"set","custom":true},{"id":"05-03","name":"شاشات جانبية للبرجولات","unit":"lm","custom":true},{"id":"05-04","name":"مظلات سيارات فاخرة","unit":"container","custom":true},{"id":"05-05","name":"لوفرات خارجية","unit":"sqm","custom":true},{"id":"05-06","name":"أنظمة تظليل للمطاعم والفنادق","unit":"pcs","custom":true}]},{"id":"06","name":"الحمامات والسبا الفاخرة","products":[{"id":"06-01","name":"مغاسل حجرية فاخرة","unit":"pcs","custom":true},{"id":"06-02","name":"أحواض استحمام مستقلة","unit":"set","custom":true},{"id":"06-03","name":"مراحيض ذكية","unit":"lm","custom":true},{"id":"06-04","name":"خلاطات PVD فاخرة","unit":"container","custom":true},{"id":"06-05","name":"أنظمة دش مخفية","unit":"sqm","custom":true},{"id":"06-06","name":"دشات سقفية كبيرة","unit":"pcs","custom":true},{"id":"06-07","name":"حواجز دش زجاجية فاخرة","unit":"set","custom":true},{"id":"06-08","name":"مرايا حمام ذكية","unit":"lm","custom":true},{"id":"06-09","name":"كونسولات حمام فاخرة","unit":"container","custom":true},{"id":"06-10","name":"إكسسوارات حمامات فندقية","unit":"sqm","custom":true}]},{"id":"07","name":"المطابخ الفاخرة وتجهيزاتها","products":[{"id":"07-01","name":"مطابخ مخصصة كاملة","unit":"pcs","custom":true},{"id":"07-02","name":"أسطح مطابخ من الحجر المتكلس","unit":"set","custom":true},{"id":"07-03","name":"جزر مطبخ فاخرة","unit":"lm","custom":true},{"id":"07-04","name":"خزائن مطبخ بدون مقابض","unit":"container","custom":true},{"id":"07-05","name":"أنظمة تخزين ومخازن مخفية","unit":"sqm","custom":true},{"id":"07-06","name":"أحواض مطبخ فاخرة","unit":"pcs","custom":true},{"id":"07-07","name":"واجهات مطابخ من الحجر المتكلس","unit":"set","custom":true},{"id":"07-08","name":"أبواب زجاجية للخزائن","unit":"lm","custom":true},{"id":"07-09","name":"إكسسوارات مطابخ مخفية","unit":"container","custom":true}]},{"id":"08","name":"الأرضيات والدرج","products":[{"id":"08-01","name":"أرضيات رخام طبيعي","unit":"pcs","custom":true},{"id":"08-02","name":"أرضيات بورسلان كبيرة الحجم","unit":"set","custom":true},{"id":"08-03","name":"أرضيات خشب هندسي","unit":"lm","custom":true},{"id":"08-04","name":"أرضيات SPC فاخرة","unit":"container","custom":true},{"id":"08-05","name":"أرضيات WPC خارجية","unit":"sqm","custom":true},{"id":"08-06","name":"درج من الحجر المتكلس","unit":"pcs","custom":true},{"id":"08-07","name":"درجات رخامية مخصصة","unit":"set","custom":true},{"id":"08-08","name":"درابزينات ودرج فاخر","unit":"lm","custom":true}]},{"id":"09","name":"الجدران والأسقف والكسوات الداخلية","products":[{"id":"09-01","name":"ألواح Fluted فاخرة","unit":"pcs","custom":true},{"id":"09-02","name":"ألواح صوتية خشبية","unit":"set","custom":true},{"id":"09-03","name":"ألواح جدران حجرية","unit":"lm","custom":true},{"id":"09-04","name":"ألواح رخام وأونيكس خفيفة","unit":"container","custom":true},{"id":"09-05","name":"ألواح ثلاثية الأبعاد","unit":"sqm","custom":true},{"id":"09-06","name":"أسقف Baffle وLinear","unit":"pcs","custom":true},{"id":"09-07","name":"كسوات أعمدة داخلية","unit":"set","custom":true},{"id":"09-08","name":"ألواح Microcement المظهر","unit":"lm","custom":true},{"id":"09-09","name":"ألواح جدارية معدنية","unit":"container","custom":true}]},{"id":"10","name":"الإضاءة المعمارية الفاخرة","products":[{"id":"10-01","name":"إضاءة خطية LED","unit":"pcs","custom":true},{"id":"10-02","name":"سبوتات بدون إطار","unit":"set","custom":true},{"id":"10-03","name":"إضاءة واجهات","unit":"lm","custom":true},{"id":"10-04","name":"إضاءة حدائق معمارية","unit":"container","custom":true},{"id":"10-05","name":"ثريات مخصصة للمشاريع","unit":"sqm","custom":true},{"id":"10-06","name":"إضاءة المرايا والخزائن","unit":"pcs","custom":true},{"id":"10-07","name":"إضاءة Cove مخفية","unit":"set","custom":true},{"id":"10-08","name":"إضاءة تحت الدرج","unit":"lm","custom":true}]},{"id":"11","name":"الخارجيات واللاندسكيب والمسابح","products":[{"id":"11-01","name":"أحواض زراعة معمارية كبيرة","unit":"pcs","custom":true},{"id":"11-02","name":"مطابخ خارجية للمشاريع","unit":"set","custom":true},{"id":"11-03","name":"شلالات مائية معمارية","unit":"lm","custom":true},{"id":"11-04","name":"نوافير معمارية","unit":"container","custom":true},{"id":"11-05","name":"بلاطات مسابح فاخرة","unit":"sqm","custom":true},{"id":"11-06","name":"حواف مسابح حجرية","unit":"pcs","custom":true},{"id":"11-07","name":"إضاءة مسابح","unit":"set","custom":true},{"id":"11-08","name":"شاشات خصوصية خارجية","unit":"lm","custom":true},{"id":"11-09","name":"أثاث خارجي للمشاريع","unit":"container","custom":true},{"id":"11-10","name":"Pool Deck فاخر","unit":"sqm","custom":true}]},{"id":"12","name":"الأبواب والنجارة المعمارية","products":[{"id":"12-01","name":"أبواب خشبية بارتفاع كامل","unit":"pcs","custom":true},{"id":"12-02","name":"أبواب مخفية Flush","unit":"set","custom":true},{"id":"12-03","name":"أبواب معدنية فاخرة","unit":"lm","custom":true},{"id":"12-04","name":"أبواب مقاومة للحريق فاخرة","unit":"container","custom":true},{"id":"12-05","name":"كسوات خشبية للجدران","unit":"sqm","custom":true},{"id":"12-06","name":"درابزينات خشبية ومعدنية","unit":"pcs","custom":true},{"id":"12-07","name":"خزائن ملابس مخصصة","unit":"set","custom":true},{"id":"12-08","name":"وحدات تلفاز وجدران مدمجة","unit":"lm","custom":true}]},{"id":"13","name":"المعادن المعمارية الفاخرة","products":[{"id":"13-01","name":"ألواح ستانلس ديكورية","unit":"pcs","custom":true},{"id":"13-02","name":"ألواح نحاس معمارية","unit":"set","custom":true},{"id":"13-03","name":"شاشات Laser Cut","unit":"lm","custom":true},{"id":"13-04","name":"شبكات معدنية زخرفية","unit":"container","custom":true},{"id":"13-05","name":"تفاصيل وتشطيبات معدنية","unit":"sqm","custom":true},{"id":"13-06","name":"ألواح برونزية معمارية","unit":"pcs","custom":true},{"id":"13-07","name":"ألواح PVD ذهبية","unit":"set","custom":true},{"id":"13-08","name":"أعمال معدنية مخصصة","unit":"lm","custom":true}]},{"id":"14","name":"السلالم والدرابزين والزجاج المعماري","products":[{"id":"14-01","name":"درابزين زجاجي بدون إطار","unit":"pcs","custom":true},{"id":"14-02","name":"درابزين ستانلس فاخر","unit":"set","custom":true},{"id":"14-03","name":"درابزين برونزي ونحاسي","unit":"lm","custom":true},{"id":"14-04","name":"سلالم معلقة","unit":"container","custom":true},{"id":"14-05","name":"هياكل سلالم معدنية مخصصة","unit":"sqm","custom":true},{"id":"14-06","name":"درابزين زجاجي للمسابح","unit":"pcs","custom":true},{"id":"14-07","name":"حواجز شرفات زجاجية","unit":"set","custom":true}]},{"id":"15","name":"تجهيزات الفنادق والضيافة","products":[{"id":"15-01","name":"أبواب غرف فندقية","unit":"pcs","custom":true},{"id":"15-02","name":"وحدات حمام فندقية جاهزة","unit":"set","custom":true},{"id":"15-03","name":"ألواح جدران فندقية","unit":"lm","custom":true},{"id":"15-04","name":"أثاث ثابت للغرف","unit":"container","custom":true},{"id":"15-05","name":"أنظمة إضاءة غرف فندقية","unit":"sqm","custom":true},{"id":"15-06","name":"Headboards فندقية","unit":"pcs","custom":true},{"id":"15-07","name":"وحدات ميني بار وخزائن","unit":"set","custom":true},{"id":"15-08","name":"كاونترات استقبال","unit":"lm","custom":true}]},{"id":"16","name":"المكاتب والمشاريع التجارية الفاخرة","products":[{"id":"16-01","name":"قواطع زجاجية فاخرة","unit":"pcs","custom":true},{"id":"16-02","name":"أبواب زجاجية للمكاتب","unit":"set","custom":true},{"id":"16-03","name":"كبائن ومقصورات صوتية","unit":"lm","custom":true},{"id":"16-04","name":"كاونترات استقبال مخصصة","unit":"container","custom":true},{"id":"16-05","name":"أسقف صوتية ومعمارية","unit":"sqm","custom":true},{"id":"16-06","name":"كسوات أعمدة","unit":"pcs","custom":true},{"id":"16-07","name":"مكاتب تنفيذية مخصصة","unit":"set","custom":true},{"id":"16-08","name":"أنظمة جدران مكتبية","unit":"lm","custom":true}]},{"id":"17","name":"مواد ومكونات التثبيت والتشطيب المتخصصة","products":[{"id":"17-01","name":"أنظمة تثبيت مخفية للحجر","unit":"pcs","custom":true},{"id":"17-02","name":"إكسسوارات تثبيت الواجهات","unit":"set","custom":true},{"id":"17-03","name":"مقابض أبواب معمارية","unit":"lm","custom":true},{"id":"17-04","name":"مفصلات وأقفال فاخرة","unit":"container","custom":true},{"id":"17-05","name":"فواصل وتمديدات فاخرة","unit":"sqm","custom":true},{"id":"17-06","name":"مصارف أرضية خطية","unit":"pcs","custom":true},{"id":"17-07","name":"أغطية تفتيش مخفية","unit":"set","custom":true},{"id":"17-08","name":"حواف وتشطيبات للألواح","unit":"lm","custom":true},{"id":"17-09","name":"إكسسوارات تثبيت الزجاج","unit":"container","custom":true}]},{"id":"18","name":"أنظمة المنزل الذكي المرتبطة بالبناء","products":[{"id":"18-01","name":"مفاتيح ذكية فاخرة","unit":"pcs","custom":true},{"id":"18-02","name":"لوحات تحكم منزلية","unit":"set","custom":true},{"id":"18-03","name":"محركات ستائر مخفية","unit":"lm","custom":true},{"id":"18-04","name":"أقفال أبواب ذكية فاخرة","unit":"container","custom":true},{"id":"18-05","name":"مرايا وشاشات ذكية مدمجة","unit":"sqm","custom":true},{"id":"18-06","name":"حساسات ومفاتيح فاخرة","unit":"pcs","custom":true},{"id":"18-07","name":"ثرموستات ذكي","unit":"set","custom":true},{"id":"18-08","name":"أنظمة تحكم بالإضاءة","unit":"lm","custom":true}]},{"id":"19","name":"مواد السبا والمسابح والمنتجعات","products":[{"id":"19-01","name":"بلاطات مسابح فاخرة","unit":"pcs","custom":true},{"id":"19-02","name":"شلالات ستانلس مخصصة","unit":"set","custom":true},{"id":"19-03","name":"نفاثات ومزايا مائية","unit":"lm","custom":true},{"id":"19-04","name":"أنظمة إضاءة تحت الماء","unit":"container","custom":true},{"id":"19-05","name":"حواف Infinity Pool","unit":"sqm","custom":true},{"id":"19-06","name":"تجهيزات سبا مائية","unit":"pcs","custom":true},{"id":"19-07","name":"مغاسل سبا حجرية","unit":"set","custom":true},{"id":"19-08","name":"أسطح مقاومة للماء","unit":"lm","custom":true}]},{"id":"20","name":"المنتجات المعمارية المخصصة للمشاريع الكبيرة","products":[{"id":"20-01","name":"أنظمة واجهات كاملة حسب جدول الكميات","unit":"pcs","custom":true},{"id":"20-02","name":"أنظمة مداخل فاخرة كاملة","unit":"set","custom":true},{"id":"20-03","name":"أنظمة حمامات فاخرة كاملة","unit":"lm","custom":true},{"id":"20-04","name":"أنظمة مطابخ كاملة للمشاريع","unit":"container","custom":true},{"id":"20-05","name":"أنظمة لاندسكيب خارجية كاملة","unit":"sqm","custom":true},{"id":"20-06","name":"حزم تجهيز الفنادق","unit":"pcs","custom":true},{"id":"20-07","name":"حزم تشطيب الفلل المتكررة","unit":"set","custom":true},{"id":"20-08","name":"منتجات مخصصة حسب المخططات","unit":"lm","custom":true}]}]};
+/* ========= البيانات / Catalog (name = Arabic, en = English) ========= */
+const C = {"markets":[{"id":"sa","name":"السعودية","dial":"966","en":"Saudi Arabia"},{"id":"ae","name":"الإمارات","dial":"971","en":"UAE"},{"id":"qa","name":"قطر","dial":"974","en":"Qatar"},{"id":"kw","name":"الكويت","dial":"965","en":"Kuwait"},{"id":"bh","name":"البحرين","dial":"973","en":"Bahrain"},{"id":"om","name":"عُمان","dial":"968","en":"Oman"}],"buyers":[{"id":"b01","name":"مستوردو مواد البناء","en":"Building materials importers"},{"id":"b02","name":"موزعو مواد البناء","en":"Building materials distributors"},{"id":"b03","name":"تجار الجملة","en":"Wholesalers"},{"id":"b04","name":"شركات المقاولات","en":"Contracting companies"},{"id":"b05","name":"شركات التشطيبات والتجهيز الداخلي","en":"Finishing and interior fit-out companies"},{"id":"b06","name":"شركات الواجهات","en":"Facade companies"},{"id":"b07","name":"شركات الألمنيوم والزجاج","en":"Aluminum and glass companies"},{"id":"b08","name":"شركات المطابخ والحمامات","en":"Kitchen and bathroom companies"},{"id":"b09","name":"شركات اللاندسكيب","en":"Landscaping companies"},{"id":"b10","name":"المطورون العقاريون","en":"Real estate developers"},{"id":"b11","name":"شركات الفنادق والضيافة","en":"Hotel and hospitality companies"},{"id":"b12","name":"المكاتب الهندسية وشركات التصميم","en":"Engineering offices and design firms"}],"units":[{"id":"sqm","name":"متر مربع","en":"Square meter"},{"id":"lm","name":"متر طولي","en":"Linear meter"},{"id":"pcs","name":"قطعة","en":"Piece"},{"id":"set","name":"مجموعة","en":"Set"},{"id":"container","name":"حاوية","en":"Container"}],"frequency":[{"id":"once","name":"مرة واحدة","en":"One-time"},{"id":"monthly","name":"شهريًا","en":"Monthly"},{"id":"quarterly","name":"كل 3 أشهر","en":"Every 3 months"},{"id":"yearly","name":"سنويًا","en":"Yearly"}],"timing":[{"id":"asap","name":"خلال شهر","en":"Within a month"},{"id":"q1","name":"خلال 3 أشهر","en":"Within 3 months"},{"id":"later","name":"بعد 3 أشهر","en":"After 3 months"},{"id":"prices","name":"أريد الأسعار فقط","en":"Prices only"}],"categories":[{"id":"01","name":"الحجر والبلاط والأسطح الفاخرة","products":[{"id":"01-01","name":"ألواح بورسلان كبيرة الحجم","unit":"pcs","custom":true,"en":"Large-format porcelain slabs"},{"id":"01-02","name":"ألواح الحجر المتكلس","unit":"set","custom":true,"en":"Sintered stone slabs"},{"id":"01-03","name":"الرخام الطبيعي","unit":"lm","custom":true,"en":"Natural marble"},{"id":"01-04","name":"الكوارتزيت الطبيعي","unit":"container","custom":true,"en":"Natural quartzite"},{"id":"01-05","name":"الجرانيت الفاخر","unit":"sqm","custom":true,"en":"Luxury granite"},{"id":"01-06","name":"الفسيفساء الفاخرة","unit":"pcs","custom":true,"en":"Luxury mosaics"},{"id":"01-07","name":"البلاطات الخارجية السميكة","unit":"set","custom":true,"en":"Thick outdoor pavers"},{"id":"01-08","name":"الحجر الطبيعي المقصوص حسب الطلب","unit":"lm","custom":true,"en":"Custom-cut natural stone"}],"en":"Luxury Stone, Tile & Surfaces"},{"id":"02","name":"الألمنيوم والواجهات المعمارية","products":[{"id":"02-01","name":"أنظمة الواجهات الزجاجية والألمنيوم","unit":"pcs","custom":true,"en":"Glass and aluminum curtain wall systems"},{"id":"02-02","name":"ألواح ألمنيوم مقطوعة بالليزر","unit":"set","custom":true,"en":"Laser-cut aluminum panels"},{"id":"02-03","name":"مشربيات ألمنيوم","unit":"lm","custom":true,"en":"Aluminum mashrabiya screens"},{"id":"02-04","name":"قطاعات ألمنيوم معمارية مخصصة","unit":"container","custom":true,"en":"Custom architectural aluminum profiles"},{"id":"02-05","name":"كسوة ألمنيوم للواجهات","unit":"sqm","custom":true,"en":"Aluminum facade cladding"},{"id":"02-06","name":"لوفرات ألمنيوم معمارية","unit":"pcs","custom":true,"en":"Architectural aluminum louvers"},{"id":"02-07","name":"ألواح ألمنيوم مركبة فاخرة","unit":"set","custom":true,"en":"Premium aluminum composite panels"}],"en":"Aluminum & Architectural Facades"},{"id":"03","name":"الأبواب والنوافذ والزجاج الفاخر","products":[{"id":"03-01","name":"أبواب منزلقة ضخمة بإطارات رفيعة","unit":"pcs","custom":true,"en":"Oversized slim-frame sliding doors"},{"id":"03-02","name":"أبواب محورية فاخرة","unit":"set","custom":true,"en":"Luxury pivot doors"},{"id":"03-03","name":"نوافذ بإطارات مخفية أو رفيعة","unit":"lm","custom":true,"en":"Hidden-frame or slim-frame windows"},{"id":"03-04","name":"زجاج منخفض الانبعاث الحراري","unit":"container","custom":true,"en":"Low-E glass"},{"id":"03-05","name":"زجاج ذكي قابل للتعتيم","unit":"sqm","custom":true,"en":"Smart switchable privacy glass"},{"id":"03-06","name":"زجاج مصفح وديكوري","unit":"pcs","custom":true,"en":"Laminated and decorative glass"},{"id":"03-07","name":"أبواب زجاجية فاخرة","unit":"set","custom":true,"en":"Luxury glass doors"},{"id":"03-08","name":"واجهات زجاجية من الأرض إلى السقف","unit":"lm","custom":true,"en":"Floor-to-ceiling glass facades"}],"en":"Luxury Doors, Windows & Glass"},{"id":"04","name":"الكسوة الخارجية ومواد الواجهات","products":[{"id":"04-01","name":"كسوة WPC خارجية","unit":"pcs","custom":true,"en":"Exterior WPC cladding"},{"id":"04-02","name":"ألواح HPL للواجهات","unit":"set","custom":true,"en":"HPL facade panels"},{"id":"04-03","name":"ألواح بورسلان للواجهات","unit":"lm","custom":true,"en":"Porcelain facade panels"},{"id":"04-04","name":"ألواح GRC وGFRC معمارية","unit":"container","custom":true,"en":"Architectural GRC and GFRC panels"},{"id":"04-05","name":"ألواح معدنية للواجهات","unit":"sqm","custom":true,"en":"Metal facade panels"},{"id":"04-06","name":"أنظمة الواجهات المهوّاة","unit":"pcs","custom":true,"en":"Ventilated facade systems"},{"id":"04-07","name":"ألواح حجرية خفيفة للواجهات","unit":"set","custom":true,"en":"Lightweight stone facade panels"},{"id":"04-08","name":"أنظمة Rainscreen","unit":"lm","custom":true,"en":"Rainscreen systems"}],"en":"Exterior Cladding & Facade Materials"},{"id":"05","name":"البرجولات والتظليل المعماري","products":[{"id":"05-01","name":"برجولات ألمنيوم فاخرة","unit":"pcs","custom":true,"en":"Luxury aluminum pergolas"},{"id":"05-02","name":"برجولات كهربائية ذكية","unit":"set","custom":true,"en":"Smart motorized pergolas"},{"id":"05-03","name":"شاشات جانبية للبرجولات","unit":"lm","custom":true,"en":"Pergola side screens"},{"id":"05-04","name":"مظلات سيارات فاخرة","unit":"container","custom":true,"en":"Luxury carports"},{"id":"05-05","name":"لوفرات خارجية","unit":"sqm","custom":true,"en":"Exterior louvers"},{"id":"05-06","name":"أنظمة تظليل للمطاعم والفنادق","unit":"pcs","custom":true,"en":"Shading systems for restaurants and hotels"}],"en":"Pergolas & Architectural Shading"},{"id":"06","name":"الحمامات والسبا الفاخرة","products":[{"id":"06-01","name":"مغاسل حجرية فاخرة","unit":"pcs","custom":true,"en":"Luxury stone basins"},{"id":"06-02","name":"أحواض استحمام مستقلة","unit":"set","custom":true,"en":"Freestanding bathtubs"},{"id":"06-03","name":"مراحيض ذكية","unit":"lm","custom":true,"en":"Smart toilets"},{"id":"06-04","name":"خلاطات PVD فاخرة","unit":"container","custom":true,"en":"Luxury PVD faucets"},{"id":"06-05","name":"أنظمة دش مخفية","unit":"sqm","custom":true,"en":"Concealed shower systems"},{"id":"06-06","name":"دشات سقفية كبيرة","unit":"pcs","custom":true,"en":"Large rain showerheads"},{"id":"06-07","name":"حواجز دش زجاجية فاخرة","unit":"set","custom":true,"en":"Luxury glass shower enclosures"},{"id":"06-08","name":"مرايا حمام ذكية","unit":"lm","custom":true,"en":"Smart bathroom mirrors"},{"id":"06-09","name":"كونسولات حمام فاخرة","unit":"container","custom":true,"en":"Luxury bathroom consoles"},{"id":"06-10","name":"إكسسوارات حمامات فندقية","unit":"sqm","custom":true,"en":"Hotel bathroom accessories"}],"en":"Luxury Bathrooms & Spa"},{"id":"07","name":"المطابخ الفاخرة وتجهيزاتها","products":[{"id":"07-01","name":"مطابخ مخصصة كاملة","unit":"pcs","custom":true,"en":"Complete custom kitchens"},{"id":"07-02","name":"أسطح مطابخ من الحجر المتكلس","unit":"set","custom":true,"en":"Sintered stone kitchen countertops"},{"id":"07-03","name":"جزر مطبخ فاخرة","unit":"lm","custom":true,"en":"Luxury kitchen islands"},{"id":"07-04","name":"خزائن مطبخ بدون مقابض","unit":"container","custom":true,"en":"Handleless kitchen cabinets"},{"id":"07-05","name":"أنظمة تخزين ومخازن مخفية","unit":"sqm","custom":true,"en":"Hidden storage and pantry systems"},{"id":"07-06","name":"أحواض مطبخ فاخرة","unit":"pcs","custom":true,"en":"Luxury kitchen sinks"},{"id":"07-07","name":"واجهات مطابخ من الحجر المتكلس","unit":"set","custom":true,"en":"Sintered stone kitchen fronts"},{"id":"07-08","name":"أبواب زجاجية للخزائن","unit":"lm","custom":true,"en":"Glass cabinet doors"},{"id":"07-09","name":"إكسسوارات مطابخ مخفية","unit":"container","custom":true,"en":"Concealed kitchen accessories"}],"en":"Luxury Kitchens & Fittings"},{"id":"08","name":"الأرضيات والدرج","products":[{"id":"08-01","name":"أرضيات رخام طبيعي","unit":"pcs","custom":true,"en":"Natural marble flooring"},{"id":"08-02","name":"أرضيات بورسلان كبيرة الحجم","unit":"set","custom":true,"en":"Large-format porcelain flooring"},{"id":"08-03","name":"أرضيات خشب هندسي","unit":"lm","custom":true,"en":"Engineered wood flooring"},{"id":"08-04","name":"أرضيات SPC فاخرة","unit":"container","custom":true,"en":"Luxury SPC flooring"},{"id":"08-05","name":"أرضيات WPC خارجية","unit":"sqm","custom":true,"en":"Exterior WPC decking"},{"id":"08-06","name":"درج من الحجر المتكلس","unit":"pcs","custom":true,"en":"Sintered stone stairs"},{"id":"08-07","name":"درجات رخامية مخصصة","unit":"set","custom":true,"en":"Custom marble steps"},{"id":"08-08","name":"درابزينات ودرج فاخر","unit":"lm","custom":true,"en":"Luxury railings and staircases"}],"en":"Flooring & Stairs"},{"id":"09","name":"الجدران والأسقف والكسوات الداخلية","products":[{"id":"09-01","name":"ألواح Fluted فاخرة","unit":"pcs","custom":true,"en":"Luxury fluted panels"},{"id":"09-02","name":"ألواح صوتية خشبية","unit":"set","custom":true,"en":"Wood acoustic panels"},{"id":"09-03","name":"ألواح جدران حجرية","unit":"lm","custom":true,"en":"Stone wall panels"},{"id":"09-04","name":"ألواح رخام وأونيكس خفيفة","unit":"container","custom":true,"en":"Lightweight marble and onyx panels"},{"id":"09-05","name":"ألواح ثلاثية الأبعاد","unit":"sqm","custom":true,"en":"3D wall panels"},{"id":"09-06","name":"أسقف Baffle وLinear","unit":"pcs","custom":true,"en":"Baffle and linear ceilings"},{"id":"09-07","name":"كسوات أعمدة داخلية","unit":"set","custom":true,"en":"Interior column cladding"},{"id":"09-08","name":"ألواح Microcement المظهر","unit":"lm","custom":true,"en":"Microcement-look panels"},{"id":"09-09","name":"ألواح جدارية معدنية","unit":"container","custom":true,"en":"Metal wall panels"}],"en":"Walls, Ceilings & Interior Cladding"},{"id":"10","name":"الإضاءة المعمارية الفاخرة","products":[{"id":"10-01","name":"إضاءة خطية LED","unit":"pcs","custom":true,"en":"Linear LED lighting"},{"id":"10-02","name":"سبوتات بدون إطار","unit":"set","custom":true,"en":"Trimless spotlights"},{"id":"10-03","name":"إضاءة واجهات","unit":"lm","custom":true,"en":"Facade lighting"},{"id":"10-04","name":"إضاءة حدائق معمارية","unit":"container","custom":true,"en":"Architectural garden lighting"},{"id":"10-05","name":"ثريات مخصصة للمشاريع","unit":"sqm","custom":true,"en":"Custom project chandeliers"},{"id":"10-06","name":"إضاءة المرايا والخزائن","unit":"pcs","custom":true,"en":"Mirror and cabinet lighting"},{"id":"10-07","name":"إضاءة Cove مخفية","unit":"set","custom":true,"en":"Concealed cove lighting"},{"id":"10-08","name":"إضاءة تحت الدرج","unit":"lm","custom":true,"en":"Under-stair lighting"}],"en":"Luxury Architectural Lighting"},{"id":"11","name":"الخارجيات واللاندسكيب والمسابح","products":[{"id":"11-01","name":"أحواض زراعة معمارية كبيرة","unit":"pcs","custom":true,"en":"Large architectural planters"},{"id":"11-02","name":"مطابخ خارجية للمشاريع","unit":"set","custom":true,"en":"Outdoor kitchens for projects"},{"id":"11-03","name":"شلالات مائية معمارية","unit":"lm","custom":true,"en":"Architectural water walls"},{"id":"11-04","name":"نوافير معمارية","unit":"container","custom":true,"en":"Architectural fountains"},{"id":"11-05","name":"بلاطات مسابح فاخرة","unit":"sqm","custom":true,"en":"Luxury pool tiles"},{"id":"11-06","name":"حواف مسابح حجرية","unit":"pcs","custom":true,"en":"Stone pool coping"},{"id":"11-07","name":"إضاءة مسابح","unit":"set","custom":true,"en":"Pool lighting"},{"id":"11-08","name":"شاشات خصوصية خارجية","unit":"lm","custom":true,"en":"Outdoor privacy screens"},{"id":"11-09","name":"أثاث خارجي للمشاريع","unit":"container","custom":true,"en":"Outdoor furniture for projects"},{"id":"11-10","name":"Pool Deck فاخر","unit":"sqm","custom":true,"en":"Luxury pool decks"}],"en":"Outdoors, Landscape & Pools"},{"id":"12","name":"الأبواب والنجارة المعمارية","products":[{"id":"12-01","name":"أبواب خشبية بارتفاع كامل","unit":"pcs","custom":true,"en":"Full-height wooden doors"},{"id":"12-02","name":"أبواب مخفية Flush","unit":"set","custom":true,"en":"Concealed flush doors"},{"id":"12-03","name":"أبواب معدنية فاخرة","unit":"lm","custom":true,"en":"Luxury metal doors"},{"id":"12-04","name":"أبواب مقاومة للحريق فاخرة","unit":"container","custom":true,"en":"Luxury fire-rated doors"},{"id":"12-05","name":"كسوات خشبية للجدران","unit":"sqm","custom":true,"en":"Wood wall paneling"},{"id":"12-06","name":"درابزينات خشبية ومعدنية","unit":"pcs","custom":true,"en":"Wood and metal railings"},{"id":"12-07","name":"خزائن ملابس مخصصة","unit":"set","custom":true,"en":"Custom wardrobes"},{"id":"12-08","name":"وحدات تلفاز وجدران مدمجة","unit":"lm","custom":true,"en":"TV units and built-in walls"}],"en":"Architectural Doors & Joinery"},{"id":"13","name":"المعادن المعمارية الفاخرة","products":[{"id":"13-01","name":"ألواح ستانلس ديكورية","unit":"pcs","custom":true,"en":"Decorative stainless steel sheets"},{"id":"13-02","name":"ألواح نحاس معمارية","unit":"set","custom":true,"en":"Architectural copper panels"},{"id":"13-03","name":"شاشات Laser Cut","unit":"lm","custom":true,"en":"Laser-cut screens"},{"id":"13-04","name":"شبكات معدنية زخرفية","unit":"container","custom":true,"en":"Decorative metal mesh"},{"id":"13-05","name":"تفاصيل وتشطيبات معدنية","unit":"sqm","custom":true,"en":"Metal details and finishes"},{"id":"13-06","name":"ألواح برونزية معمارية","unit":"pcs","custom":true,"en":"Architectural bronze panels"},{"id":"13-07","name":"ألواح PVD ذهبية","unit":"set","custom":true,"en":"Gold PVD panels"},{"id":"13-08","name":"أعمال معدنية مخصصة","unit":"lm","custom":true,"en":"Custom metalwork"}],"en":"Luxury Architectural Metals"},{"id":"14","name":"السلالم والدرابزين والزجاج المعماري","products":[{"id":"14-01","name":"درابزين زجاجي بدون إطار","unit":"pcs","custom":true,"en":"Frameless glass railings"},{"id":"14-02","name":"درابزين ستانلس فاخر","unit":"set","custom":true,"en":"Luxury stainless steel railings"},{"id":"14-03","name":"درابزين برونزي ونحاسي","unit":"lm","custom":true,"en":"Bronze and copper railings"},{"id":"14-04","name":"سلالم معلقة","unit":"container","custom":true,"en":"Floating staircases"},{"id":"14-05","name":"هياكل سلالم معدنية مخصصة","unit":"sqm","custom":true,"en":"Custom metal staircase structures"},{"id":"14-06","name":"درابزين زجاجي للمسابح","unit":"pcs","custom":true,"en":"Glass pool fencing"},{"id":"14-07","name":"حواجز شرفات زجاجية","unit":"set","custom":true,"en":"Glass balcony balustrades"}],"en":"Stairs, Railings & Architectural Glass"},{"id":"15","name":"تجهيزات الفنادق والضيافة","products":[{"id":"15-01","name":"أبواب غرف فندقية","unit":"pcs","custom":true,"en":"Hotel room doors"},{"id":"15-02","name":"وحدات حمام فندقية جاهزة","unit":"set","custom":true,"en":"Prefabricated hotel bathroom pods"},{"id":"15-03","name":"ألواح جدران فندقية","unit":"lm","custom":true,"en":"Hotel wall panels"},{"id":"15-04","name":"أثاث ثابت للغرف","unit":"container","custom":true,"en":"Fixed room furniture"},{"id":"15-05","name":"أنظمة إضاءة غرف فندقية","unit":"sqm","custom":true,"en":"Hotel room lighting systems"},{"id":"15-06","name":"Headboards فندقية","unit":"pcs","custom":true,"en":"Hotel headboards"},{"id":"15-07","name":"وحدات ميني بار وخزائن","unit":"set","custom":true,"en":"Minibar units and cabinets"},{"id":"15-08","name":"كاونترات استقبال","unit":"lm","custom":true,"en":"Reception counters"}],"en":"Hotel & Hospitality Fit-Out"},{"id":"16","name":"المكاتب والمشاريع التجارية الفاخرة","products":[{"id":"16-01","name":"قواطع زجاجية فاخرة","unit":"pcs","custom":true,"en":"Luxury glass partitions"},{"id":"16-02","name":"أبواب زجاجية للمكاتب","unit":"set","custom":true,"en":"Office glass doors"},{"id":"16-03","name":"كبائن ومقصورات صوتية","unit":"lm","custom":true,"en":"Acoustic booths and pods"},{"id":"16-04","name":"كاونترات استقبال مخصصة","unit":"container","custom":true,"en":"Custom reception counters"},{"id":"16-05","name":"أسقف صوتية ومعمارية","unit":"sqm","custom":true,"en":"Acoustic and architectural ceilings"},{"id":"16-06","name":"كسوات أعمدة","unit":"pcs","custom":true,"en":"Column cladding"},{"id":"16-07","name":"مكاتب تنفيذية مخصصة","unit":"set","custom":true,"en":"Custom executive desks"},{"id":"16-08","name":"أنظمة جدران مكتبية","unit":"lm","custom":true,"en":"Office wall systems"}],"en":"Luxury Offices & Commercial Projects"},{"id":"17","name":"مواد ومكونات التثبيت والتشطيب المتخصصة","products":[{"id":"17-01","name":"أنظمة تثبيت مخفية للحجر","unit":"pcs","custom":true,"en":"Concealed stone fixing systems"},{"id":"17-02","name":"إكسسوارات تثبيت الواجهات","unit":"set","custom":true,"en":"Facade fixing accessories"},{"id":"17-03","name":"مقابض أبواب معمارية","unit":"lm","custom":true,"en":"Architectural door handles"},{"id":"17-04","name":"مفصلات وأقفال فاخرة","unit":"container","custom":true,"en":"Luxury hinges and locks"},{"id":"17-05","name":"فواصل وتمديدات فاخرة","unit":"sqm","custom":true,"en":"Luxury movement joints and trims"},{"id":"17-06","name":"مصارف أرضية خطية","unit":"pcs","custom":true,"en":"Linear floor drains"},{"id":"17-07","name":"أغطية تفتيش مخفية","unit":"set","custom":true,"en":"Concealed access covers"},{"id":"17-08","name":"حواف وتشطيبات للألواح","unit":"lm","custom":true,"en":"Panel edges and trims"},{"id":"17-09","name":"إكسسوارات تثبيت الزجاج","unit":"container","custom":true,"en":"Glass fixing accessories"}],"en":"Specialty Fixing & Finishing Components"},{"id":"18","name":"أنظمة المنزل الذكي المرتبطة بالبناء","products":[{"id":"18-01","name":"مفاتيح ذكية فاخرة","unit":"pcs","custom":true,"en":"Luxury smart switches"},{"id":"18-02","name":"لوحات تحكم منزلية","unit":"set","custom":true,"en":"Home control panels"},{"id":"18-03","name":"محركات ستائر مخفية","unit":"lm","custom":true,"en":"Concealed curtain motors"},{"id":"18-04","name":"أقفال أبواب ذكية فاخرة","unit":"container","custom":true,"en":"Luxury smart door locks"},{"id":"18-05","name":"مرايا وشاشات ذكية مدمجة","unit":"sqm","custom":true,"en":"Built-in smart mirrors and displays"},{"id":"18-06","name":"حساسات ومفاتيح فاخرة","unit":"pcs","custom":true,"en":"Luxury sensors and switches"},{"id":"18-07","name":"ثرموستات ذكي","unit":"set","custom":true,"en":"Smart thermostats"},{"id":"18-08","name":"أنظمة تحكم بالإضاءة","unit":"lm","custom":true,"en":"Lighting control systems"}],"en":"Smart Home Systems for Construction"},{"id":"19","name":"مواد السبا والمسابح والمنتجعات","products":[{"id":"19-01","name":"بلاطات مسابح فاخرة","unit":"pcs","custom":true,"en":"Luxury pool tiles"},{"id":"19-02","name":"شلالات ستانلس مخصصة","unit":"set","custom":true,"en":"Custom stainless steel waterfalls"},{"id":"19-03","name":"نفاثات ومزايا مائية","unit":"lm","custom":true,"en":"Water jets and features"},{"id":"19-04","name":"أنظمة إضاءة تحت الماء","unit":"container","custom":true,"en":"Underwater lighting systems"},{"id":"19-05","name":"حواف Infinity Pool","unit":"sqm","custom":true,"en":"Infinity pool edges"},{"id":"19-06","name":"تجهيزات سبا مائية","unit":"pcs","custom":true,"en":"Spa water equipment"},{"id":"19-07","name":"مغاسل سبا حجرية","unit":"set","custom":true,"en":"Stone spa basins"},{"id":"19-08","name":"أسطح مقاومة للماء","unit":"lm","custom":true,"en":"Waterproof surfaces"}],"en":"Spa, Pool & Resort Materials"},{"id":"20","name":"المنتجات المعمارية المخصصة للمشاريع الكبيرة","products":[{"id":"20-01","name":"أنظمة واجهات كاملة حسب جدول الكميات","unit":"pcs","custom":true,"en":"Complete facade systems by BOQ"},{"id":"20-02","name":"أنظمة مداخل فاخرة كاملة","unit":"set","custom":true,"en":"Complete luxury entrance systems"},{"id":"20-03","name":"أنظمة حمامات فاخرة كاملة","unit":"lm","custom":true,"en":"Complete luxury bathroom systems"},{"id":"20-04","name":"أنظمة مطابخ كاملة للمشاريع","unit":"container","custom":true,"en":"Complete kitchen systems for projects"},{"id":"20-05","name":"أنظمة لاندسكيب خارجية كاملة","unit":"sqm","custom":true,"en":"Complete exterior landscape systems"},{"id":"20-06","name":"حزم تجهيز الفنادق","unit":"pcs","custom":true,"en":"Hotel fit-out packages"},{"id":"20-07","name":"حزم تشطيب الفلل المتكررة","unit":"set","custom":true,"en":"Repeat villa finishing packages"},{"id":"20-08","name":"منتجات مخصصة حسب المخططات","unit":"lm","custom":true,"en":"Custom products to drawings"}],"en":"Custom Architectural Products for Large Projects"}]};
 
-/* ========= المنطق ========= */
-const STEPS = [
-  { key:'market',   title:'من أي دولة تطلب؟' },
-  { key:'buyer',    title:'ما نوع نشاطك؟' },
-  { key:'products', title:'ما المنتجات التي تبحث عنها؟' },
-  { key:'quantity', title:'ما الكمية المتوقعة؟' },
-  { key:'contact',  title:'كيف نتواصل معك؟' },
-];
+/* ========= النصوص / UI text ========= */
+const T = {
+  ar: {
+    title: 'اطلب مواد البناء الفاخرة من الصين',
+    h1: 'اطلب مواد البناء الفاخرة مباشرة من مصانع الصين',
+    sub: 'أجب عن خمسة أسئلة قصيرة، وسنرسل لك عروض الأسعار على واتساب.',
+    s_market: 'من أي دولة تطلب؟', s_buyer: 'ما نوع نشاطك؟', s_products: 'ما المنتجات التي تبحث عنها؟',
+    s_quantity: 'ما الكمية المتوقعة؟', s_contact: 'كيف نتواصل معك؟',
+    e_market: 'اختر الدولة للمتابعة.', e_buyer: 'اختر نوع النشاط للمتابعة.', e_products: 'اختر منتجًا واحدًا على الأقل.',
+    e_quantity: 'أدخل كمية أكبر من صفر.', e_unit: 'اختر وحدة القياس.', e_frequency: 'اختر مدى تكرار الشراء.',
+    e_timing: 'اختر موعد الحاجة.', e_name: 'أدخل اسمك الكامل.', e_phone: 'أدخل رقم واتساب صحيحًا بدون رمز الدولة.',
+    stepOf: (a, b) => `الخطوة ${a} من ${b}`,
+    progress: 'تقدّم النموذج', marketAria: 'الدولة', buyerAria: 'نوع النشاط', langAria: 'اللغة',
+    searchPh: 'ابحث عن منتج، مثل: رخام أو مشربية', searchAria: 'ابحث عن منتج',
+    empty: 'لا توجد نتائج. جرّب كلمة أخرى أو تصفّح الفئات.', selAria: 'المنتجات المختارة',
+    remove: (n) => `إزالة ${n}`, max: (n) => `الحد الأقصى ${n} منتجات في الطلب الواحد.`,
+    qty: 'الكمية التقريبية', qtyPh: 'مثال: 500', unit: 'الوحدة', frequency: 'كم مرة تشتريها؟', timing: 'متى تحتاجها؟',
+    note: 'مواصفات خاصة (اختياري)', notePh: 'المقاسات، الألوان، التشطيب، أو أي تفاصيل أخرى',
+    name: 'الاسم الكامل', company: 'اسم الشركة (اختياري)', phone: 'رقم واتساب', phonePh: '5X XXX XXXX', trap: 'الموقع',
+    fail: 'تعذّر إرسال الطلب. تحقق من الاتصال بالإنترنت ثم اضغط «إرسال الطلب» مرة أخرى.',
+    next: 'التالي', prev: 'السابق', send: 'إرسال الطلب', sending: 'جارٍ الإرسال…',
+    doneTitle: 'تم استلام طلبك',
+    doneMsg: (p) => `سنتواصل معك على واتساب ${p} بعروض الأسعار.`,
+    demo: 'وضع تجريبي: لم يُحفظ الطلب لأن Supabase غير مضبوط.',
+    dCountry: 'الدولة', dBuyer: 'النشاط', dProducts: 'المنتجات', dQty: 'الكمية', again: 'إرسال طلب جديد', sep: '، ',
+  },
+  en: {
+    title: 'Order luxury building materials from China',
+    h1: "Order luxury building materials direct from China's factories",
+    sub: "Answer five short questions and we'll send you price quotes on WhatsApp.",
+    s_market: 'Which country are you ordering from?', s_buyer: 'What type of business are you?', s_products: 'Which products are you looking for?',
+    s_quantity: 'What quantity do you expect?', s_contact: 'How can we reach you?',
+    e_market: 'Choose a country to continue.', e_buyer: 'Choose a business type to continue.', e_products: 'Select at least one product.',
+    e_quantity: 'Enter a quantity greater than zero.', e_unit: 'Choose a unit.', e_frequency: 'Choose how often you buy.',
+    e_timing: 'Choose when you need it.', e_name: 'Enter your full name.', e_phone: 'Enter a valid WhatsApp number without the country code.',
+    stepOf: (a, b) => `Step ${a} of ${b}`,
+    progress: 'Form progress', marketAria: 'Country', buyerAria: 'Business type', langAria: 'Language',
+    searchPh: 'Search for a product, e.g. marble or mashrabiya', searchAria: 'Search for a product',
+    empty: 'No results. Try another word or browse the categories.', selAria: 'Selected products',
+    remove: (n) => `Remove ${n}`, max: (n) => `You can add up to ${n} products per request.`,
+    qty: 'Approximate quantity', qtyPh: 'e.g. 500', unit: 'Unit', frequency: 'How often do you buy?', timing: 'When do you need it?',
+    note: 'Special requirements (optional)', notePh: 'Sizes, colors, finish, or any other details',
+    name: 'Full name', company: 'Company name (optional)', phone: 'WhatsApp number', phonePh: '5X XXX XXXX', trap: 'Website',
+    fail: 'We couldn’t send your request. Check your internet connection, then press “Send request” again.',
+    next: 'Next', prev: 'Back', send: 'Send request', sending: 'Sending…',
+    doneTitle: 'Request received',
+    doneMsg: (p) => `We’ll contact you on WhatsApp at ${p} with price quotes.`,
+    demo: 'Demo mode: the request wasn’t saved because Supabase isn’t configured.',
+    dCountry: 'Country', dBuyer: 'Business', dProducts: 'Products', dQty: 'Quantity', again: 'Submit a new request', sep: ', ',
+  },
+};
+
+/* ========= اللغة / Language ========= */
+let lang = 'ar';
+try {
+  const p = new URLSearchParams(location.search).get('lang'), s = localStorage.getItem('lang');
+  lang = (p === 'en' || p === 'ar') ? p : (s === 'en' || s === 'ar') ? s : 'ar';
+} catch (e) {}
+const t = (k, ...a) => { const v = T[lang][k]; return typeof v === 'function' ? v(...a) : v; };
+const L = (x) => (lang === 'en' ? x.en : x.name);
+
+/* ========= المنطق / Logic ========= */
+const STEPS = ['market', 'buyer', 'products', 'quantity', 'contact'];
 const MAX = 8;
 const EMPTY = () => ({ market:'', buyer:'', products:[], quantity:'', unit:'', frequency:'', timing:'', note:'', name:'', company:'', phone:'', website:'' });
 
-let f = EMPTY(), step = 0, errors = {}, status = 'idle', notice = '', sentPhone = '', openCat = null, q = '';
+let f = EMPTY(), step = 0, errors = {}, status = 'idle', notice = null, sentPhone = '', openCat = null, q = '';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nf = (n) => Number(n).toLocaleString('ar-EG');
-const nameOf = (list, id) => (list.find((x) => x.id === id) || {}).name || '';
-// تطبيع النص العربي للبحث: يتجاهل التشكيل والهمزات والتاء المربوطة
+const nf = (n) => Number(n).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US');
+const nameOf = (list, id) => { const x = list.find((y) => y.id === id); return x ? L(x) : ''; };
+// تطبيع النص للبحث: يتجاهل التشكيل والهمزات والتاء المربوطة / normalizes Arabic + Latin text for search
 const norm = (s) => s.normalize('NFKD').replace(/[\u064B-\u065F\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase();
 
-const ALL = C.categories.flatMap((c) => c.products.map((p) => ({ ...p, catName: c.name, key: norm(p.name) })));
+// البحث يطابق الاسمين العربي والإنجليزي معًا / search matches both Arabic and English names
+const ALL = C.categories.flatMap((c) => c.products.map((p) => ({ ...p, cat: c, key: norm(p.name + ' ' + p.en) })));
 const BYID = Object.fromEntries(ALL.map((p) => [p.id, p]));
 
 const CHECK = '<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9.5l3.2 3.2L14 5.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -152,145 +214,165 @@ const X = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><p
 
 function validate() {
   const e = {};
-  switch (STEPS[step].key) {
-    case 'market': if (!f.market) e.market = 'اختر الدولة للمتابعة.'; break;
-    case 'buyer': if (!f.buyer) e.buyer = 'اختر نوع النشاط للمتابعة.'; break;
-    case 'products': if (!f.products.length) e.products = 'اختر منتجًا واحدًا على الأقل.'; break;
+  switch (STEPS[step]) {
+    case 'market': if (!f.market) e.market = 'e_market'; break;
+    case 'buyer': if (!f.buyer) e.buyer = 'e_buyer'; break;
+    case 'products': if (!f.products.length) e.products = 'e_products'; break;
     case 'quantity':
-      if (!(Number(f.quantity) > 0)) e.quantity = 'أدخل كمية أكبر من صفر.';
-      if (!f.unit) e.unit = 'اختر وحدة القياس.';
-      if (!f.frequency) e.frequency = 'اختر مدى تكرار الشراء.';
-      if (!f.timing) e.timing = 'اختر موعد الحاجة.';
+      if (!(Number(f.quantity) > 0)) e.quantity = 'e_quantity';
+      if (!f.unit) e.unit = 'e_unit';
+      if (!f.frequency) e.frequency = 'e_frequency';
+      if (!f.timing) e.timing = 'e_timing';
       break;
     case 'contact': {
-      if (f.name.trim().length < 2) e.name = 'أدخل اسمك الكامل.';
+      if (f.name.trim().length < 2) e.name = 'e_name';
       const d = f.phone.replace(/\D/g,'').replace(/^0+/,'');
-      if (d.length < 7 || d.length > 10) e.phone = 'أدخل رقم واتساب صحيحًا بدون رمز الدولة.';
+      if (d.length < 7 || d.length > 10) e.phone = 'e_phone';
       break;
     }
   }
-  return e;
+  return e; // نخزّن مفاتيح الرسائل لا نصوصها، فتتبدل مع اللغة / keys, so messages follow the language
 }
 
-/* ---------- قوالب HTML ---------- */
-const err = (k) => errors[k] ? `<p class="err" role="alert">${errors[k]}</p>` : '';
+/* ---------- قوالب HTML / templates ---------- */
+const err = (k) => errors[k] ? `<p class="err" role="alert">${esc(t(errors[k]))}</p>` : '';
 const chip = (act, id, label, on, cls = '') =>
   `<button type="button" role="radio" aria-checked="${on}" class="chip ${on ? 'on' : ''} ${cls}" data-act="${act}" data-id="${id}">${esc(label)}</button>`;
-const group = (legend, key, list, cur) =>
-  `<fieldset><legend>${legend}</legend><div class="wrap" role="radiogroup">${list.map((x) => chip(key, x.id, x.name, cur === x.id)).join('')}</div>${err(key)}</fieldset>`;
+const group = (key, list, cur) =>
+  `<fieldset><legend>${esc(t(key))}</legend><div class="wrap" role="radiogroup">${list.map((x) => chip(key, x.id, L(x), cur === x.id)).join('')}</div>${err(key)}</fieldset>`;
 
 function rowHTML(p, showCat) {
   const on = f.products.includes(p.id);
   return `<button type="button" role="checkbox" aria-checked="${on}" class="prow ${on ? 'on' : ''}" data-act="toggle" data-id="${p.id}">
     <span class="box">${CHECK}</span>
-    <span class="grow"><span class="pn">${esc(p.name)}</span>${showCat ? `<span class="pc">${esc(p.catName)}</span>` : ''}</span></button>`;
+    <span class="grow"><span class="pn">${esc(L(p))}</span>${showCat ? `<span class="pc">${esc(L(p.cat))}</span>` : ''}</span></button>`;
 }
 function listHTML() {
-  const t = q.trim();
-  if (t) {
-    const r = ALL.filter((p) => p.key.includes(norm(t)));
-    return r.length ? r.map((p) => rowHTML(p, true)).join('') : '<p class="empty">لا توجد نتائج. جرّب كلمة أخرى أو تصفّح الفئات.</p>';
+  const s = q.trim();
+  if (s) {
+    // كل كلمة تُطابق على حدة، مع تجاهل ة/ات في آخرها (مشربية ← مشربيات) / each word is matched separately
+    const words = norm(s).split(/\s+/).filter(Boolean).map((w) => (w.length > 3 ? w.replace(/(ات|ه)$/, '') : w));
+    const r = ALL.filter((p) => words.every((w) => p.key.includes(w)));
+    return r.length ? r.map((p) => rowHTML(p, true)).join('') : `<p class="empty">${esc(t('empty'))}</p>`;
   }
   const cat = C.categories.find((c) => c.id === openCat);
-  if (cat) return `<button type="button" class="prow head" data-act="back">${BACK}${esc(cat.name)}</button>` + cat.products.map((p) => rowHTML(p)).join('');
+  if (cat) return `<button type="button" class="prow head" data-act="back">${BACK}${esc(L(cat))}</button>` + cat.products.map((p) => rowHTML(p)).join('');
   return C.categories.map((c) => {
     const n = c.products.filter((p) => f.products.includes(p.id)).length;
-    return `<button type="button" class="prow cat" data-act="cat" data-id="${c.id}"><span class="grow">${esc(c.name)}</span>${n ? `<span class="badge">${nf(n)}</span>` : ''}${FWD}</button>`;
+    return `<button type="button" class="prow cat" data-act="cat" data-id="${c.id}"><span class="grow">${esc(L(c))}</span>${n ? `<span class="badge">${nf(n)}</span>` : ''}${FWD}</button>`;
   }).join('');
 }
+const noticeText = () => (notice ? t(notice.k, nf(notice.n)) : '');
 function chipsHTML() {
   return f.products.map((id) =>
-    `<li>${esc(BYID[id].name)}<button type="button" data-act="remove" data-id="${id}" aria-label="إزالة ${esc(BYID[id].name)}">${X}</button></li>`).join('');
+    `<li>${esc(L(BYID[id]))}<button type="button" data-act="remove" data-id="${id}" aria-label="${esc(t('remove', L(BYID[id])))}">${X}</button></li>`).join('');
 }
 function refreshProducts(focusId) {
   $('#chips').innerHTML = chipsHTML();
   $('#plist').innerHTML = listHTML();
   $('#perr').innerHTML = err('products');
-  $('#notice').textContent = notice;
+  $('#notice').textContent = noticeText();
   if (focusId) { const b = document.querySelector(`#plist [data-id="${focusId}"]`); if (b) b.focus({ preventScroll: true }); }
 }
 
 function stepHTML() {
-  switch (STEPS[step].key) {
+  switch (STEPS[step]) {
     case 'market':
-      return `<div class="grid2 grid3" role="radiogroup" aria-label="الدولة">${C.markets.map((m) => chip('market', m.id, m.name, f.market === m.id, 'center')).join('')}</div>${err('market')}`;
+      return `<div class="grid2 grid3" role="radiogroup" aria-label="${esc(t('marketAria'))}">${C.markets.map((m) => chip('market', m.id, L(m), f.market === m.id, 'center')).join('')}</div>${err('market')}`;
     case 'buyer':
-      return `<div class="grid-b" role="radiogroup" aria-label="نوع النشاط">${C.buyers.map((b) => chip('buyer', b.id, b.name, f.buyer === b.id)).join('')}</div>${err('buyer')}`;
+      return `<div class="grid-b" role="radiogroup" aria-label="${esc(t('buyerAria'))}">${C.buyers.map((b) => chip('buyer', b.id, L(b), f.buyer === b.id)).join('')}</div>${err('buyer')}`;
     case 'products':
-      return `<ul class="sel" id="chips" aria-label="المنتجات المختارة">${chipsHTML()}</ul>
-        <input class="inp" id="q" type="search" value="${esc(q)}" placeholder="ابحث عن منتج، مثل: رخام أو مشربية" aria-label="ابحث عن منتج">
-        <div id="plist">${listHTML()}</div><div id="perr">${err('products')}</div><p class="note" id="notice" role="status">${esc(notice)}</p>`;
+      return `<ul class="sel" id="chips" aria-label="${esc(t('selAria'))}">${chipsHTML()}</ul>
+        <input class="inp" id="q" type="search" value="${esc(q)}" placeholder="${esc(t('searchPh'))}" aria-label="${esc(t('searchAria'))}">
+        <div id="plist">${listHTML()}</div><div id="perr">${err('products')}</div><p class="note" id="notice" role="status">${esc(noticeText())}</p>`;
     case 'quantity':
       return `<div class="stack">
-        <div class="field"><label class="l" for="qty">الكمية التقريبية</label>
-          <input class="inp" id="qty" data-field="quantity" type="number" inputmode="decimal" min="0" value="${esc(f.quantity)}" placeholder="مثال: 500">${err('quantity')}</div>
-        ${group('الوحدة', 'unit', C.units, f.unit)}
-        ${group('كم مرة تشتريها؟', 'frequency', C.frequency, f.frequency)}
-        ${group('متى تحتاجها؟', 'timing', C.timing, f.timing)}
-        <div class="field"><label class="l" for="note">مواصفات خاصة (اختياري)</label>
-          <textarea class="inp" id="note" data-field="note" rows="3" maxlength="1000" placeholder="المقاسات، الألوان، التشطيب، أو أي تفاصيل أخرى">${esc(f.note)}</textarea></div></div>`;
+        <div class="field"><label class="l" for="qty">${esc(t('qty'))}</label>
+          <input class="inp" id="qty" data-field="quantity" type="number" inputmode="decimal" min="0" value="${esc(f.quantity)}" placeholder="${esc(t('qtyPh'))}">${err('quantity')}</div>
+        ${group('unit', C.units, f.unit)}
+        ${group('frequency', C.frequency, f.frequency)}
+        ${group('timing', C.timing, f.timing)}
+        <div class="field"><label class="l" for="note">${esc(t('note'))}</label>
+          <textarea class="inp" id="note" data-field="note" rows="3" maxlength="1000" placeholder="${esc(t('notePh'))}">${esc(f.note)}</textarea></div></div>`;
     case 'contact': {
       const m = C.markets.find((x) => x.id === f.market);
       return `<div class="stack">
-        <div class="field"><label class="l" for="name">الاسم الكامل</label>
+        <div class="field"><label class="l" for="name">${esc(t('name'))}</label>
           <input class="inp" id="name" data-field="name" autocomplete="name" value="${esc(f.name)}">${err('name')}</div>
-        <div class="field"><label class="l" for="company">اسم الشركة (اختياري)</label>
+        <div class="field"><label class="l" for="company">${esc(t('company'))}</label>
           <input class="inp" id="company" data-field="company" autocomplete="organization" value="${esc(f.company)}"></div>
-        <div class="field"><label class="l" for="phone">رقم واتساب</label>
+        <div class="field"><label class="l" for="phone">${esc(t('phone'))}</label>
           <div class="phone"><span class="dial">+${m ? m.dial : ''}</span>
-          <input class="inp" id="phone" data-field="phone" type="tel" inputmode="tel" autocomplete="tel-national" value="${esc(f.phone)}" placeholder="5X XXX XXXX"></div>${err('phone')}</div>
-        <div class="trap" aria-hidden="true"><label>الموقع<input tabindex="-1" autocomplete="off" data-field="website" value="${esc(f.website)}"></label></div>
-        ${status === 'error' ? '<p class="fail" role="alert">تعذّر إرسال الطلب. تحقق من الاتصال بالإنترنت ثم اضغط «إرسال الطلب» مرة أخرى.</p>' : ''}</div>`;
+          <input class="inp" id="phone" data-field="phone" type="tel" inputmode="tel" autocomplete="tel-national" value="${esc(f.phone)}" placeholder="${esc(t('phonePh'))}"></div>${err('phone')}</div>
+        <div class="trap" aria-hidden="true"><label>${esc(t('trap'))}<input tabindex="-1" autocomplete="off" data-field="website" value="${esc(f.website)}"></label></div>
+        ${status === 'error' ? `<p class="fail" role="alert">${esc(t('fail'))}</p>` : ''}</div>`;
     }
   }
+}
+
+function renderHead() {
+  $('#head').innerHTML = `<div class="lang"><div role="group" aria-label="${esc(t('langAria'))}">
+      <button type="button" lang="ar" data-act="lang" data-id="ar" aria-pressed="${lang === 'ar'}">العربية</button>
+      <button type="button" lang="en" data-act="lang" data-id="en" aria-pressed="${lang === 'en'}">English</button></div></div>
+    <h1>${esc(t('h1'))}</h1><p>${esc(t('sub'))}</p>`;
 }
 
 function render() {
   const root = $('#root');
   if (status === 'done') {
-    root.innerHTML = `<section class="done"><h2 id="title" tabindex="-1">تم استلام طلبك</h2>
-      <p>سنتواصل معك على واتساب <bdi dir="ltr"><strong>+${esc(sentPhone)}</strong></bdi> بعروض الأسعار.</p>
-      ${SUPABASE_URL ? '' : '<p class="note">وضع تجريبي: لم يُحفظ الطلب لأن Supabase غير مضبوط.</p>'}
+    root.innerHTML = `<section class="done"><h2 id="title" tabindex="-1">${esc(t('doneTitle'))}</h2>
+      <p>${esc(t('doneMsg', '\u0000')).replace('\u0000', `<bdi dir="ltr"><strong>+${esc(sentPhone)}</strong></bdi>`)}</p>
+      ${SUPABASE_URL ? '' : `<p class="note">${esc(t('demo'))}</p>`}
       <dl>
-        <div><dt>الدولة</dt><dd>${esc(nameOf(C.markets, f.market))}</dd></div>
-        <div><dt>النشاط</dt><dd>${esc(nameOf(C.buyers, f.buyer))}</dd></div>
-        <div><dt>المنتجات</dt><dd style="text-align:end">${f.products.map((id) => esc(BYID[id].name)).join('، ')}</dd></div>
-        <div><dt>الكمية</dt><dd>${nf(f.quantity)} ${esc(nameOf(C.units, f.unit))}</dd></div>
+        <div><dt>${esc(t('dCountry'))}</dt><dd>${esc(nameOf(C.markets, f.market))}</dd></div>
+        <div><dt>${esc(t('dBuyer'))}</dt><dd>${esc(nameOf(C.buyers, f.buyer))}</dd></div>
+        <div><dt>${esc(t('dProducts'))}</dt><dd style="text-align:end">${f.products.map((id) => esc(L(BYID[id]))).join(esc(t('sep')))}</dd></div>
+        <div><dt>${esc(t('dQty'))}</dt><dd>${nf(f.quantity)} ${esc(nameOf(C.units, f.unit))}</dd></div>
       </dl>
-      <button type="button" class="btn-out" data-act="reset">إرسال طلب جديد</button></section>`;
+      <button type="button" class="btn-out" data-act="reset">${esc(t('again'))}</button></section>`;
     return;
   }
-  const single = ['market', 'buyer'].includes(STEPS[step].key);
+  const single = ['market', 'buyer'].includes(STEPS[step]);
   const last = step === STEPS.length - 1, sending = status === 'sending';
   root.innerHTML = `<form id="frm" novalidate>
-    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="${STEPS.length}" aria-valuenow="${step + 1}" aria-label="تقدّم النموذج">
+    <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="${STEPS.length}" aria-valuenow="${step + 1}" aria-label="${esc(t('progress'))}">
       <div class="bars">${STEPS.map((s, i) => `<span class="${i <= step ? 'on' : ''}"></span>`).join('')}</div>
-      <p>الخطوة ${nf(step + 1)} من ${nf(STEPS.length)}</p></div>
-    <h2 id="title" tabindex="-1">${STEPS[step].title}</h2>
+      <p>${esc(t('stepOf', nf(step + 1), nf(STEPS.length)))}</p></div>
+    <h2 id="title" tabindex="-1">${esc(t('s_' + STEPS[step]))}</h2>
     <div class="body">${stepHTML()}</div>
     <div class="bar">
-      ${step > 0 ? `<button type="button" class="btn-prev" data-act="prev" ${sending ? 'disabled' : ''}>السابق</button>` : ''}
-      ${single ? '' : `<button type="submit" class="btn-next" ${sending ? 'disabled' : ''}>${sending ? 'جارٍ الإرسال…' : last ? 'إرسال الطلب' : 'التالي'}</button>`}
+      ${step > 0 ? `<button type="button" class="btn-prev" data-act="prev" ${sending ? 'disabled' : ''}>${esc(t('prev'))}</button>` : ''}
+      ${single ? '' : `<button type="submit" class="btn-next" ${sending ? 'disabled' : ''}>${esc(sending ? t('sending') : last ? t('send') : t('next'))}</button>`}
     </div></form>`;
 }
 
-function focusTitle() { const t = $('#title'); if (t) t.focus({ preventScroll: true }); window.scrollTo({ top: 0 }); }
-function go(n) { step = n; errors = {}; notice = ''; render(); focusTitle(); }
+function setLang(l) {
+  lang = l;
+  try { localStorage.setItem('lang', l); } catch (e) {}
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+  document.title = t('title');
+  renderHead(); render();
+  const b = document.querySelector(`[data-act="lang"][data-id="${l}"]`); if (b) b.focus({ preventScroll: true });
+}
+
+function focusTitle() { const el = $('#title'); if (el) el.focus({ preventScroll: true }); window.scrollTo({ top: 0 }); }
+function go(n) { step = n; errors = {}; notice = null; render(); focusTitle(); }
 function next() {
   errors = validate();
   if (Object.keys(errors).length) { render(); return; }
   if (step < STEPS.length - 1) go(step + 1); else send();
 }
 function toggleProduct(id) {
-  if (f.products.includes(id)) { f.products = f.products.filter((x) => x !== id); notice = ''; }
-  else if (f.products.length >= MAX) { notice = `الحد الأقصى ${nf(MAX)} منتجات في الطلب الواحد.`; }
-  else { f.products.push(id); notice = ''; errors = {}; if (!f.unit) f.unit = BYID[f.products[0]].unit; }
+  if (f.products.includes(id)) { f.products = f.products.filter((x) => x !== id); notice = null; }
+  else if (f.products.length >= MAX) { notice = { k: 'max', n: MAX }; }
+  else { f.products.push(id); notice = null; errors = {}; if (!f.unit) f.unit = BYID[f.products[0]].unit; }
   refreshProducts(id);
 }
 
-/* ---------- الإرسال إلى Supabase ---------- */
+/* ---------- الإرسال إلى Supabase / submit ---------- */
 function readUtm() {
-  const p = new URLSearchParams(location.search), u = {};
+  const p = new URLSearchParams(location.search), u = { lang };
   ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].forEach((k) => { if (p.get(k)) u[k] = p.get(k); });
   return u;
 }
@@ -303,7 +385,7 @@ async function post(table, body) {
   if (!r.ok) throw new Error(await r.text());
 }
 async function send() {
-  if (f.website) { status = 'done'; sentPhone = '—'; render(); focusTitle(); return; } // روبوت: نتجاهل بصمت
+  if (f.website) { status = 'done'; sentPhone = '—'; render(); focusTitle(); return; } // bot: ignore silently
   status = 'sending'; render();
   try {
     const dial = C.markets.find((m) => m.id === f.market).dial;
@@ -315,7 +397,7 @@ async function send() {
       full_name: f.name.trim(), company: f.company.trim() || null, whatsapp: phone, utm: readUtm(),
     };
     const items = f.products.map((product_id) => ({ request_id: id, product_id }));
-    if (!SUPABASE_URL) { console.warn('Supabase غير مضبوط: وضع تجريبي', { request, items }); await new Promise((r) => setTimeout(r, 600)); }
+    if (!SUPABASE_URL) { console.warn('Supabase not configured: demo mode', { request, items }); await new Promise((r) => setTimeout(r, 600)); }
     else { await post('demand_requests', request); await post('demand_request_items', items); }
     sentPhone = phone; status = 'done'; render(); focusTitle();
   } catch (e) {
@@ -323,11 +405,12 @@ async function send() {
   }
 }
 
-/* ---------- الأحداث ---------- */
+/* ---------- الأحداث / events ---------- */
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act, id = b.dataset.id;
-  if (a === 'market' || a === 'buyer') { f[a] = id; errors = {}; render(); setTimeout(() => go(step + 1), 160); }
+  if (a === 'lang') setLang(id);
+  else if (a === 'market' || a === 'buyer') { f[a] = id; errors = {}; render(); setTimeout(() => go(step + 1), 160); }
   else if (a === 'unit' || a === 'frequency' || a === 'timing') {
     f[a] = id; delete errors[a]; render();
     const el = document.querySelector(`[data-act="${a}"][data-id="${id}"]`); if (el) el.focus({ preventScroll: true });
@@ -339,18 +422,22 @@ document.addEventListener('click', (e) => {
   else if (a === 'reset') { f = EMPTY(); q = ''; openCat = null; status = 'idle'; go(0); }
 });
 document.addEventListener('input', (e) => {
-  const t = e.target;
-  if (t.id === 'q') { q = t.value; refreshProducts(); return; }
-  const k = t.dataset.field; if (!k) return;
-  f[k] = t.value;
-  if (errors[k]) { delete errors[k]; const el = t.closest('.field'); if (el) { const p = el.querySelector('.err'); if (p) p.remove(); } }
+  const el = e.target;
+  if (el.id === 'q') { q = el.value; refreshProducts(); return; }
+  const k = el.dataset.field; if (!k) return;
+  f[k] = el.value;
+  if (errors[k]) { delete errors[k]; const w = el.closest('.field'); if (w) { const p = w.querySelector('.err'); if (p) p.remove(); } }
 });
 document.addEventListener('submit', (e) => {
   e.preventDefault();
-  if (!['market', 'buyer'].includes(STEPS[step].key)) next();
+  if (!['market', 'buyer'].includes(STEPS[step])) next();
 });
 
-render();
+/* بدء التشغيل / start */
+document.documentElement.lang = lang;
+document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+document.title = t('title');
+renderHead(); render();
 </script>
 </body>
 </html>
